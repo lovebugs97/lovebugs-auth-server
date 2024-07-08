@@ -3,13 +3,13 @@ server.port: 8001
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://61.109.238.66:8000/auth
+    url: jdbc:postgresql://61.109.238.66:5432/auth
     username: postgres
     password: 1111
 
   rabbitmq:
     host: 61.109.238.66
-    port: 3000
+    port: 5672
     username: guest
     password: guest
 
