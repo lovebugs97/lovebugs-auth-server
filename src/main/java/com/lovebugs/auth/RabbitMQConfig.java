@@ -29,7 +29,7 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public TopicExchange directExchange() {
+    public TopicExchange topicExchange() {
         return new TopicExchange(exchangeName);
     }
 
@@ -40,16 +40,10 @@ public class RabbitMQConfig {
     }
 
     @Bean
-    public MessageListenerAdapter listenerAdapter(MessageDto messageDto) {
-        return new MessageListenerAdapter(messageDto, "receiveMessage");
-    }
-
-    @Bean
-    public SimpleMessageListenerContainer container(ConnectionFactory connectionFactory, MessageListenerAdapter listenerAdapter) {
+    public SimpleMessageListenerContainer container(ConnectionFactory connectionFactory) {
         SimpleMessageListenerContainer container = new SimpleMessageListenerContainer();
         container.setConnectionFactory(connectionFactory);
         container.setQueueNames(queueName);
-        container.setMessageListener(listenerAdapter);
         return container;
     }
 }
