@@ -3,13 +3,24 @@ server.port: 8001
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://61.109.238.66:5432/auth
+    url: jdbc:postgresql://61.109.238.66:8000/auth
     username: postgres
     password: 1111
 
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        use_sql_comments: true
+        format_sql: true
+        show_sql: true
+    hibernate:
+      ddl-auto: create
+    generate-ddl: true
+
   rabbitmq:
     host: 61.109.238.66
-    port: 5672
+    port: 8000
     username: guest
     password: guest
 
