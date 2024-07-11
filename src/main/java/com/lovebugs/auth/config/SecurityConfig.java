@@ -1,4 +1,4 @@
-package com.lovebugs.auth;
+package com.lovebugs.auth.config;
 
 
 import lombok.RequiredArgsConstructor;
