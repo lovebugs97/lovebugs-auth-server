@@ -1,33 +1,10 @@
-server.port: 8000
+server:
+  port: 0
 
 spring:
-  datasource:
-    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/auth
-    username: postgres
-    password: 1111
-
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        use_sql_comments: true
-        format_sql: true
-        show_sql: true
-    hibernate:
-      ddl-auto: create
-    generate-ddl: true
-
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: guest
-    password: guest
-
-rabbitmq:
-  queue:
-    name: lovebugs-email-auth-queue
-  exchange:
-    name: lovebugs-email-auth-exchange
-  routing:
-    key: lovebugs-email-auth-key
+  profiles:
+    active: local
+  application:
+    name: auth-server
+  config:
+    import: optional:configserver:http://localhost:8888
