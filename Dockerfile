@@ -9,4 +9,4 @@ FROM openjdk:17.0-slim
 WORKDIR /app
 COPY --from=builder /app/build/libs/*.jar app.jar
 USER nobody
-ENTRYPOINT ["java", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-jar", "Dspring.profiles.active=test", "app.jar"]

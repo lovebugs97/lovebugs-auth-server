@@ -8,3 +8,14 @@ spring:
     import: optional:configserver:http://localhost:8888
   profiles:
     active: local
+---
+server:
+  port: 0
+
+spring:
+  application:
+    name: auth-server
+  config:
+    import: optional:configserver:http://lovebugs-config-server:8888
+  profiles:
+    active: test
