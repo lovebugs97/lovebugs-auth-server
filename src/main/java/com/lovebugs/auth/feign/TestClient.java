@@ -1,4 +1,4 @@
-package com.lovebugs.auth;
+package com.lovebugs.auth.feign;
 
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -6,9 +6,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 
 @FeignClient("config-service")
 public interface TestClient {
-    @GetMapping("/api/v1/test")
+    @GetMapping("/")
     String getTest();
 
-    @PostMapping("/api/v1/test")
+    @PostMapping("/")
     String postTest();
 }
