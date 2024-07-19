@@ -1,6 +1,6 @@
 package com.lovebugs.auth.utils;
 
-import com.lovebugs.auth.dto.TokenResponse;
+import com.lovebugs.auth.dto.TokenDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -35,22 +35,21 @@ public class JwtTokenProvider {
         this.refreshTokenExpTime = refreshTokenExpTime;
     }
 
-    public TokenResponse generateToken(Authentication authentication) {
+    public TokenDto generateToken(Authentication authentication) {
         // 인증 객체로부터 권한 가져오기
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
 
-        log.info("Authorities: {}", authorities);
-
         // 토큰 생성
         String accessToken = createToken(authorities, authentication.getName(), accessTokenExpTime);
         String refreshToken = createToken(authorities, authentication.getName(), refreshTokenExpTime);
 
+        log.info("Authorities: {}", authorities);
         log.info("AccessToken: {}", accessToken);
         log.info("RefreshToken: {}", refreshToken);
 
-        return new TokenResponse("Bearer", accessToken, refreshToken);
+        return new TokenDto("Bearer", accessToken, refreshToken);
     }
 
     public boolean validateToken(String token) {

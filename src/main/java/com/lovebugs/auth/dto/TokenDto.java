@@ -1,6 +1,6 @@
 package com.lovebugs.auth.dto;
 
-public record TokenResponse(
+public record TokenDto(
         String grantType,
         String accessToken,
         String refreshToken

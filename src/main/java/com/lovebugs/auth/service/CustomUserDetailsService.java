@@ -1,10 +1,10 @@
 package com.lovebugs.auth.service;
 
-import com.lovebugs.auth.domain.entity.Member;
+import com.lovebugs.auth.exception.ErrorCode;
+import com.lovebugs.auth.exception.InvalidCredentialException;
 import com.lovebugs.auth.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -24,6 +24,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         log.info("loadUserByEmail: {}", email);
 
         return memberRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User Not Found " + email));
+                .orElseThrow(() -> new InvalidCredentialException(ErrorCode.INVALID_CREDENTIAL));
     }
 }

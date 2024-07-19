@@ -1,17 +1,16 @@
 package com.lovebugs.auth.controller;
 
 import com.lovebugs.auth.dto.LoginRequest;
+import com.lovebugs.auth.dto.LoginResponse;
 import com.lovebugs.auth.dto.SignupRequest;
-import com.lovebugs.auth.dto.TokenResponse;
 import com.lovebugs.auth.service.AuthService;
+import com.lovebugs.auth.utils.CookieProvider;
 import jakarta.ws.rs.core.HttpHeaders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.Duration;
 
 @RestController
 @RequiredArgsConstructor
@@ -21,6 +20,7 @@ public class AuthController {
     private static final String ACCESS_TOKEN = "accessToken";
     private static final String REFRESH_TOKEN = "refreshToken";
     private final AuthService authService;
+    private final CookieProvider cookieProvider;
 
     @PostMapping("/signup")
     public ResponseEntity<SignupRequest> signup(@RequestBody SignupRequest signupRequest) {
@@ -31,29 +31,16 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         log.info("Login Request: {}", loginRequest.toString());
-        TokenResponse tokenResponse = authService.login(loginRequest);
 
-        ResponseCookie accessTokenCookie = ResponseCookie.from(ACCESS_TOKEN, tokenResponse.accessToken())
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .path("/")
-                .maxAge(Duration.ofDays(7))
-                .build();
-
-        ResponseCookie refreshTokenCookie = ResponseCookie.from(REFRESH_TOKEN, tokenResponse.refreshToken())
-                .httpOnly(true)
-                .secure(true)
-                .sameSite("None")
-                .path("/")
-                .maxAge(Duration.ofDays(7))
-                .build();
+        LoginResponse loginResponse = authService.login(loginRequest);
+        ResponseCookie accessTokenCookie = cookieProvider.generateCookie(ACCESS_TOKEN, loginResponse.getAccessToken());
+        ResponseCookie refreshTokenCookie = cookieProvider.generateCookie(REFRESH_TOKEN, loginResponse.getRefreshToken());
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
-                .build();
+                .body(loginResponse);
     }
 
     @PostMapping("/logout")

@@ -3,8 +3,13 @@ package com.lovebugs.auth.service;
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.RoleType;
 import com.lovebugs.auth.dto.LoginRequest;
+import com.lovebugs.auth.dto.LoginResponse;
 import com.lovebugs.auth.dto.SignupRequest;
-import com.lovebugs.auth.dto.TokenResponse;
+import com.lovebugs.auth.dto.TokenDto;
+import com.lovebugs.auth.exception.AuthenticationFailedException;
+import com.lovebugs.auth.exception.EmailDuplicatedException;
+import com.lovebugs.auth.exception.ErrorCode;
+import com.lovebugs.auth.exception.InvalidCredentialException;
 import com.lovebugs.auth.repository.MemberRepository;
 import com.lovebugs.auth.utils.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +34,7 @@ public class AuthService {
     public void signup(SignupRequest signupRequest) {
         // Email 중복 체크
         if (existsBy(signupRequest.email())) {
-            throw new RuntimeException("중복된 이메일");
+            throw new EmailDuplicatedException(ErrorCode.EMAIL_DUPLICATION);
         }
 
         // Todo: Email 인증 로직 추가 (별도의 메서드로 이메일 인증 로직 구현)
@@ -42,14 +47,13 @@ public class AuthService {
     }
 
     @Transactional
-    public TokenResponse login(LoginRequest loginRequest) {
-        // Todo: Custom 예외 클래스로 수정, 전역 예외 처리 로직 추가
+    public LoginResponse login(LoginRequest loginRequest) {
         Member member = memberRepository.findByEmail(loginRequest.email())
-                .orElseThrow(() -> new RuntimeException("존재하지 않는 이메일"));
+                .orElseThrow(() -> new InvalidCredentialException(ErrorCode.INVALID_CREDENTIAL));
 
         // Todo: 비밀번호 틀렸을 시 로직 추가, 3회 에러 시 초기화 로직
         if (!passwordMatch(loginRequest.password(), member.getPassword())) {
-            throw new RuntimeException("비밀번호 미일치");
+            throw new InvalidCredentialException(ErrorCode.INVALID_CREDENTIAL);
         }
 
         // 미인증 상태의 Authentication 객체 생성 (인증 여부를 확인할 때 사용되는 authenticated 값 false)
@@ -61,14 +65,14 @@ public class AuthService {
                 authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
         if (!authentication.isAuthenticated()) {
-            throw new RuntimeException("Authentication failed");
+            throw new AuthenticationFailedException(ErrorCode.AUTHENTICATION_FAIL);
         }
 
-        TokenResponse tokenResponse = jwtTokenProvider.generateToken(authentication);
+        TokenDto tokenDto = jwtTokenProvider.generateToken(authentication);
         member.updateLastLoginDate();
-        member.updateRefreshToken(tokenResponse.refreshToken());
+        member.updateRefreshToken(tokenDto.refreshToken());
 
-        return tokenResponse;
+        return new LoginResponse(member, tokenDto.accessToken(), tokenDto.refreshToken());
     }
 
     @Transactional(readOnly = true)
