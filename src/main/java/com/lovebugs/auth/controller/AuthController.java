@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/auth")
+@RequestMapping("/auth/v1")
 @Slf4j
 public class AuthController {
     private static final String ACCESS_TOKEN = "accessToken";
@@ -35,11 +35,10 @@ public class AuthController {
         log.info("Login Request: {}", loginRequest.toString());
 
         LoginResponse loginResponse = authService.login(loginRequest);
-        ResponseCookie accessTokenCookie = cookieProvider.generateCookie(ACCESS_TOKEN, loginResponse.getAccessToken());
         ResponseCookie refreshTokenCookie = cookieProvider.generateCookie(REFRESH_TOKEN, loginResponse.getRefreshToken());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString(), refreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(loginResponse);
     }
 

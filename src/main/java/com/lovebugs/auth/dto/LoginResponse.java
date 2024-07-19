@@ -18,13 +18,10 @@ public class LoginResponse {
     private final LocalDateTime lastLoginDate;
     private final Gender gender;
     private final List<String> roles;
-
-    /* 토큰은 쿠키로 전달 */
-    @JsonIgnore
     private final String accessToken;
 
     @JsonIgnore
-    private final String refreshToken;
+    private final String refreshToken;  /* 리프레시 토큰은 쿠키로 전달 */
 
     public LoginResponse(Member member, String accessToken, String refreshToken) {
         this.id = member.getId();

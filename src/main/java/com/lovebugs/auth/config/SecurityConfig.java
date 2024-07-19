@@ -1,5 +1,6 @@
 package com.lovebugs.auth.config;
 
+import com.lovebugs.auth.domain.enums.RoleType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -24,8 +25,9 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(authorizeRequest -> {
                     authorizeRequest
-                            .requestMatchers("/actuator/**").permitAll()
-                            .requestMatchers("/v1/auth/**").permitAll()
+                            .requestMatchers("/auth/v1/**").permitAll()
+                            .requestMatchers("/actuator/**").hasRole(RoleType.ROLE_ADMIN.getRole())
+                            .requestMatchers("/admin/v1/**").hasRole(RoleType.ROLE_ADMIN.getRole())
                             .anyRequest().authenticated();
                 });
 
