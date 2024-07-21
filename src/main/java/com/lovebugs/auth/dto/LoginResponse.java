@@ -6,7 +6,6 @@ import com.lovebugs.auth.domain.enums.Gender;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 @Getter
 public class LoginResponse {
@@ -17,11 +16,10 @@ public class LoginResponse {
     private final LocalDateTime createdAt;
     private final LocalDateTime lastLoginDate;
     private final Gender gender;
-    private final List<String> roles;
     private final String accessToken;
 
     @JsonIgnore
-    private final String refreshToken;  /* 리프레시 토큰은 쿠키로 전달 */
+    private final String refreshToken;
 
     public LoginResponse(Member member, String accessToken, String refreshToken) {
         this.id = member.getId();
@@ -31,7 +29,6 @@ public class LoginResponse {
         this.createdAt = member.getCreatedAt();
         this.lastLoginDate = member.getLastLoginDate();
         this.gender = member.getGender();
-        this.roles = member.getRoles();
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
     }

@@ -1,5 +1,6 @@
 package com.lovebugs.auth.utils;
 
+import com.lovebugs.auth.config.JwtProperties;
 import com.lovebugs.auth.dto.TokenDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
@@ -8,7 +9,6 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
@@ -19,20 +19,16 @@ import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class JwtTokenProvider {
+public class JwtUtils {
     private final Key key;
     private final long accessTokenExpTime;
     private final long refreshTokenExpTime;
 
-    public JwtTokenProvider(
-            @Value("${jwt.secretKey}") String secretKey,
-            @Value("${jwt.accessToken.expiration}") long accessTokenExpTime,
-            @Value("${jwt.refreshToken.expiration}") long refreshTokenExpTime
-    ) {
-        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+    public JwtUtils(JwtProperties jwtProperties) {
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.accessTokenExpTime = accessTokenExpTime;
-        this.refreshTokenExpTime = refreshTokenExpTime;
+        this.accessTokenExpTime = jwtProperties.getAccessTokenExpiration();
+        this.refreshTokenExpTime = jwtProperties.getRefreshTokenExpiration();
     }
 
     public TokenDto generateToken(Authentication authentication) {
@@ -44,10 +40,6 @@ public class JwtTokenProvider {
         // 토큰 생성
         String accessToken = createToken(authorities, authentication.getName(), accessTokenExpTime);
         String refreshToken = createToken(authorities, authentication.getName(), refreshTokenExpTime);
-
-        log.info("Authorities: {}", authorities);
-        log.info("AccessToken: {}", accessToken);
-        log.info("RefreshToken: {}", refreshToken);
 
         return new TokenDto("Bearer", accessToken, refreshToken);
     }
@@ -66,7 +58,8 @@ public class JwtTokenProvider {
     }
 
     private String createToken(String authorities, String email, long tokenExpTime) {
-        Claims claims = Jwts.claims().setSubject(email);
+        Claims claims = Jwts.claims();
+        claims.put("email", email);
         claims.put("authorities", authorities);
         Date now = new Date();
 

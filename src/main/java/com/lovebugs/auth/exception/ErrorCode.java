@@ -8,7 +8,6 @@ import org.springframework.http.HttpStatus;
 @RequiredArgsConstructor
 public enum ErrorCode {
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "Email duplication"),
-    INVALID_CREDENTIAL(HttpStatus.BAD_REQUEST, "Invalid Credential"),
     AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "Unauthorized")
 
     ;

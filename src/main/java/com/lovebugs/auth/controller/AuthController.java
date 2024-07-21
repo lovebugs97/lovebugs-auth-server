@@ -1,13 +1,14 @@
 package com.lovebugs.auth.controller;
 
+import com.lovebugs.auth.config.JwtProperties;
 import com.lovebugs.auth.dto.LoginRequest;
 import com.lovebugs.auth.dto.LoginResponse;
 import com.lovebugs.auth.dto.SignupRequest;
 import com.lovebugs.auth.service.AuthService;
-import com.lovebugs.auth.utils.CookieProvider;
-import jakarta.ws.rs.core.HttpHeaders;
+import com.lovebugs.auth.utils.CookieUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,7 +21,8 @@ public class AuthController {
     private static final String ACCESS_TOKEN = "accessToken";
     private static final String REFRESH_TOKEN = "refreshToken";
     private final AuthService authService;
-    private final CookieProvider cookieProvider;
+    private final CookieUtils cookieUtils;
+    private final JwtProperties jwtProperties;
 
     @PostMapping("/signup")
     public ResponseEntity<SignupRequest> signup(@RequestBody SignupRequest signupRequest) {
@@ -32,27 +34,15 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
-        log.info("Login Request: {}", loginRequest.toString());
-
         LoginResponse loginResponse = authService.login(loginRequest);
-        ResponseCookie refreshTokenCookie = cookieProvider.generateCookie(REFRESH_TOKEN, loginResponse.getRefreshToken());
+        String refreshToken = loginResponse.getRefreshToken();
+
+        ResponseCookie responseCookie =
+                cookieUtils.generateCookie(REFRESH_TOKEN, refreshToken, jwtProperties.getRefreshTokenExpiration());
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
+                .header(HttpHeaders.SET_COOKIE, responseCookie.toString())
                 .body(loginResponse);
-    }
-
-    @PostMapping("/logout")
-    public ResponseEntity<?> logout() {
-        authService.logout();
-
-        ResponseCookie cookie = ResponseCookie.from(REFRESH_TOKEN, "")
-                .maxAge(1)
-                .build();
-
-        return ResponseEntity.ok()
-                .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                .build();
     }
 
     @PostMapping("/refresh")
