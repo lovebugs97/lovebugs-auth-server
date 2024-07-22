@@ -2,9 +2,8 @@ package com.lovebugs.auth.service;
 
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.RoleType;
-import com.lovebugs.auth.dto.LoginRequest;
-import com.lovebugs.auth.dto.LoginResponse;
-import com.lovebugs.auth.dto.SignupRequest;
+import com.lovebugs.auth.dto.LoginDto;
+import com.lovebugs.auth.dto.SignupDto;
 import com.lovebugs.auth.dto.TokenDto;
 import com.lovebugs.auth.exception.EmailDuplicationException;
 import com.lovebugs.auth.exception.ErrorCode;
@@ -29,34 +28,34 @@ public class AuthService {
     private final JwtUtils jwtUtils;
 
     @Transactional
-    public void signup(SignupRequest signupRequest) {
+    public void signup(SignupDto.Request signupRequest) {
         // Email 중복 체크
-        if (existsBy(signupRequest.email())) {
+        if (existsBy(signupRequest.getEmail())) {
             throw new EmailDuplicationException(ErrorCode.EMAIL_DUPLICATION);
         }
 
         // Todo: Email 인증 로직 추가 (별도의 메서드로 이메일 인증 로직 구현)
 
         // 엔티티 생성 (비밀번호 암호화, 권한 부여) & 영속화
-        String encodedPassword = passwordEncoder.encode(signupRequest.password());
+        String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
         List<String> roles = List.of(RoleType.ROLE_USER.getRole());
         Member member = signupRequest.toEntity(encodedPassword, roles);
         memberRepository.save(member);
     }
 
     @Transactional
-    public LoginResponse login(LoginRequest loginRequest) {
+    public LoginDto.Response login(LoginDto.Request loginRequest) {
         UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password());
+                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
 
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
         TokenDto tokenDto = jwtUtils.generateToken(authentication);
 
         Member member = (Member) authentication.getPrincipal();
         member.updateLastLoginDate();
-        member.updateRefreshToken(tokenDto.refreshToken());
+        member.updateRefreshToken(tokenDto.getRefreshToken());
 
-        return new LoginResponse(member, tokenDto.accessToken(), tokenDto.refreshToken());
+        return new LoginDto.Response(member, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
     }
 
     @Transactional(readOnly = true)

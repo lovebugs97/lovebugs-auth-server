@@ -21,14 +21,12 @@ import java.util.stream.Collectors;
 @Component
 public class JwtUtils {
     private final Key key;
-    private final long accessTokenExpTime;
-    private final long refreshTokenExpTime;
+    private final JwtProperties jwtProperties;
 
     public JwtUtils(JwtProperties jwtProperties) {
         byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
         this.key = Keys.hmacShaKeyFor(keyBytes);
-        this.accessTokenExpTime = jwtProperties.getAccessTokenExpiration();
-        this.refreshTokenExpTime = jwtProperties.getRefreshTokenExpiration();
+        this.jwtProperties = jwtProperties;
     }
 
     public TokenDto generateToken(Authentication authentication) {
@@ -38,10 +36,10 @@ public class JwtUtils {
                 .collect(Collectors.joining(","));
 
         // 토큰 생성
-        String accessToken = createToken(authorities, authentication.getName(), accessTokenExpTime);
-        String refreshToken = createToken(authorities, authentication.getName(), refreshTokenExpTime);
+        String accessToken = createToken(authorities, authentication.getName(), jwtProperties.getAccessTokenExpiration());
+        String refreshToken = createToken(authorities, authentication.getName(), jwtProperties.getRefreshTokenExpiration());
 
-        return new TokenDto("Bearer", accessToken, refreshToken);
+        return new TokenDto(jwtProperties.getPrefix(), accessToken, refreshToken);
     }
 
     public boolean validateToken(String token) {
