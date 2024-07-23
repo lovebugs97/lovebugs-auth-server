@@ -7,8 +7,9 @@ import org.springframework.http.HttpStatus;
 @Getter
 @RequiredArgsConstructor
 public enum ErrorCode {
+    MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "Member not found"),
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "Email duplication"),
-    AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "Unauthorized")
+    AUTHENTICATION_FAIL(HttpStatus.UNAUTHORIZED, "Unauthorized"),
 
     ;
 

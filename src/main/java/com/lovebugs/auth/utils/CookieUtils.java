@@ -10,6 +10,7 @@ public class CookieUtils {
         return ResponseCookie.from(key, value)
                 .httpOnly(true)
                 .secure(true)
+                .domain("localhost")
                 .sameSite("None")
                 .path("/api")
                 .maxAge(expSec)

@@ -42,6 +42,15 @@ public class JwtUtils {
         return new TokenDto(jwtProperties.getPrefix(), accessToken, refreshToken);
     }
 
+    public Date extractExpiration(String token) {
+        if (validateToken(token)) {
+            Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return claims.getBody().getExpiration();
+        }
+
+        return null;
+    }
+
     public boolean validateToken(String token) {
         try {
             Jws<Claims> claims = Jwts.parserBuilder()
@@ -64,7 +73,7 @@ public class JwtUtils {
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + tokenExpTime))
+                .setExpiration(new Date(now.getTime() + (tokenExpTime * 1000)))   // seconds -> milliseconds
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

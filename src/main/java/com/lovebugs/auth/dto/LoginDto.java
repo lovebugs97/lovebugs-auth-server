@@ -25,8 +25,6 @@ public class LoginDto {
         private final LocalDateTime lastLoginDate;
         private final Gender gender;
         private final String accessToken;
-
-        @JsonIgnore
         private final String refreshToken;
 
         public Response(Member member, String accessToken, String refreshToken) {

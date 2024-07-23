@@ -5,6 +5,7 @@ import com.lovebugs.auth.dto.ErrorResponse;
 import com.lovebugs.auth.exception.AuthenticationFailureException;
 import com.lovebugs.auth.exception.EmailDuplicationException;
 import com.lovebugs.auth.exception.ErrorCode;
+import com.lovebugs.auth.exception.MemberNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +27,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(EmailDuplicationException.class)
     protected ResponseEntity<ErrorResponse> handleEmailDuplicationException(EmailDuplicationException e) {
+        log.error(e.getMessage());
+        return handleExceptionInternal(e.getErrorCode());
+    }
+
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    @ExceptionHandler(MemberNotFoundException.class)
+    protected ResponseEntity<ErrorResponse> handleMemberNotFoundException(MemberNotFoundException e) {
         log.error(e.getMessage());
         return handleExceptionInternal(e.getErrorCode());
     }

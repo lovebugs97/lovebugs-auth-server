@@ -1,4 +1,4 @@
-package com.lovebugs.auth.controller;
+package com.lovebugs.auth.controller.v1;
 
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.repository.MemberRepository;

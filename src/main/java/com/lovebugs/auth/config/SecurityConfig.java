@@ -16,7 +16,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.web.cors.CorsUtils;
 
 @Configuration
 @RequiredArgsConstructor
@@ -32,15 +31,11 @@ public class SecurityConfig {
                 .formLogin(FormLoginConfigurer::disable)
                 .cors(CorsConfigurer::disable)      /* Gateway에서 수행 */
                 .httpBasic(HttpBasicConfigurer::disable)
-                .sessionManagement(ses -> ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .invalidateHttpSession(true));
+                .sessionManagement(ses -> ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http
                 .authorizeHttpRequests(authorizeRequest -> {
                     authorizeRequest
-                            .requestMatchers(CorsUtils::isPreFlightRequest).permitAll()
                             .requestMatchers("/auth/v1/**").permitAll()
                             .requestMatchers("/actuator/**").hasRole(RoleType.ROLE_ADMIN.getRole())
                             .requestMatchers("/admin/v1/**").hasRole(RoleType.ROLE_ADMIN.getRole())
