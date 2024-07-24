@@ -10,9 +10,6 @@ spring:
   profiles:
     active: local
 ---
-server:
-  port: 0
-
 spring:
   application:
     name: auth-server

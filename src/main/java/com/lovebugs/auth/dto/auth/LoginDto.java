@@ -1,6 +1,5 @@
-package com.lovebugs.auth.dto;
+package com.lovebugs.auth.dto.auth;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.Gender;
 import lombok.Getter;

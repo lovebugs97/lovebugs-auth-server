@@ -1,4 +1,4 @@
-package com.lovebugs.auth.dto;
+package com.lovebugs.auth.dto.auth;
 
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.Gender;

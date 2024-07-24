@@ -1,4 +1,4 @@
-package com.lovebugs.auth.dto;
+package com.lovebugs.auth.dto.auth;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

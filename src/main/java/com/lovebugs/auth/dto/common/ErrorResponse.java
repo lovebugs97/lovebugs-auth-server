@@ -1,4 +1,4 @@
-package com.lovebugs.auth.dto;
+package com.lovebugs.auth.dto.common;
 
 import com.lovebugs.auth.exception.ErrorCode;
 import lombok.Getter;

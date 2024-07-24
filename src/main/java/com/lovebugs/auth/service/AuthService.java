@@ -2,15 +2,16 @@ package com.lovebugs.auth.service;
 
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.RoleType;
-import com.lovebugs.auth.dto.LoginDto;
-import com.lovebugs.auth.dto.LogoutDto;
-import com.lovebugs.auth.dto.SignupDto;
-import com.lovebugs.auth.dto.TokenDto;
+import com.lovebugs.auth.dto.auth.LoginDto;
+import com.lovebugs.auth.dto.auth.LogoutDto;
+import com.lovebugs.auth.dto.auth.SignupDto;
+import com.lovebugs.auth.dto.auth.TokenDto;
 import com.lovebugs.auth.exception.EmailDuplicationException;
 import com.lovebugs.auth.exception.ErrorCode;
 import com.lovebugs.auth.exception.MemberNotFoundException;
 import com.lovebugs.auth.repository.MemberRepository;
 import com.lovebugs.auth.utils.JwtUtils;
+import com.lovebugs.auth.utils.TokenBlackListUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -28,7 +29,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AuthService {
     private final MemberRepository memberRepository;
-    private final TokenBlackListService tokenBlackListService;
+    private final TokenBlackListUtils tokenBlackListUtils;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
@@ -79,12 +80,9 @@ public class AuthService {
         // AccessToken 블랙리스트 처리 (redis 연동), RefreshToken은 단순히 DB에 null 처리만 반영
         Date accessTokenExpiration = jwtUtils.extractExpiration(accessToken);
         if (accessTokenExpiration != null) {
-            tokenBlackListService.addToBlackList(accessToken, accessTokenExpiration);
+            tokenBlackListUtils.addToBlackList(accessToken, accessTokenExpiration);
         }
 
         member.updateRefreshToken(null);
-
-        Boolean blacked = tokenBlackListService.isTokenBlackListed(accessToken);
-        log.info("Token Added to BlackList: {}, Expiration Date: {}", blacked, accessTokenExpiration);
     }
 }

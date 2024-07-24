@@ -1,7 +1,8 @@
 package com.lovebugs.auth.utils;
 
 import com.lovebugs.auth.config.JwtProperties;
-import com.lovebugs.auth.dto.TokenDto;
+import com.lovebugs.auth.domain.entity.Member;
+import com.lovebugs.auth.dto.auth.TokenDto;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
@@ -42,6 +43,15 @@ public class JwtUtils {
         return new TokenDto(jwtProperties.getPrefix(), accessToken, refreshToken);
     }
 
+    public TokenDto generateToken(Member member) {
+        String authorities = String.join(",", member.getRoles());
+
+        String accessToken = createToken(authorities, member.getUsername(), jwtProperties.getAccessTokenExpiration());
+        String refreshToken = createToken(authorities, member.getUsername(), jwtProperties.getRefreshTokenExpiration());
+
+        return new TokenDto(jwtProperties.getPrefix(), accessToken, refreshToken);
+    }
+
     public Date extractExpiration(String token) {
         if (validateToken(token)) {
             Jws<Claims> claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
@@ -60,6 +70,7 @@ public class JwtUtils {
 
             return !claims.getBody().getExpiration().before(new Date());
         } catch (Exception e) {
+            log.error("Token Expired: {}", e.getMessage());
             return false;
         }
     }

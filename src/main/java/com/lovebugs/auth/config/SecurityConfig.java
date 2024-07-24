@@ -37,6 +37,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorizeRequest -> {
                     authorizeRequest
                             .requestMatchers("/auth/v1/**").permitAll()
+                            .requestMatchers("/token/v1/**").permitAll()
+                            .requestMatchers("/member/v1/**").permitAll()
                             .requestMatchers("/actuator/**").hasRole(RoleType.ROLE_ADMIN.getRole())
                             .requestMatchers("/admin/v1/**").hasRole(RoleType.ROLE_ADMIN.getRole())
                             .anyRequest().authenticated();
