@@ -5,10 +5,12 @@ import com.lovebugs.auth.dto.auth.LoginDto;
 import com.lovebugs.auth.dto.auth.LogoutDto;
 import com.lovebugs.auth.dto.auth.SignupDto;
 import com.lovebugs.auth.service.AuthService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -21,19 +23,20 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/auth/v1")
+@Validated
 @Slf4j
 public class AuthController {
     private final AuthService authService;
     private final JwtProperties jwtProperties;
 
     @PostMapping("/signup")
-    public ResponseEntity<Void> signup(@RequestBody SignupDto.Request signupRequest) {
+    public ResponseEntity<Void> signup(@RequestBody @Valid SignupDto.Request signupRequest) {
         authService.signup(signupRequest);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginDto.Response> login(@RequestBody LoginDto.Request loginRequest) {
+    public ResponseEntity<LoginDto.Response> login(@RequestBody @Valid LoginDto.Request loginRequest) {
         LoginDto.Response loginResponse = authService.login(loginRequest);
         return ResponseEntity.ok().body(loginResponse);
     }

@@ -10,12 +10,12 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/token/v1")
 public class TokenController {
+    private static final String BEARER = "Bearer";
     private final TokenService tokenService;
 
     @PostMapping("/validation")
     public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String token) {
-        System.out.println(token);
-        String parsedToken = token.substring(7);
+        String parsedToken = token.replace(BEARER, "").trim();
         tokenService.validateToken(parsedToken);
         return ResponseEntity.ok().build();
     }

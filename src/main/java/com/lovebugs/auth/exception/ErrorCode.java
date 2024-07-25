@@ -12,6 +12,7 @@ public enum ErrorCode {
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "Email duplication"),
     AUTHENTICATION_FAIL(HttpStatus.BAD_REQUEST, "Unauthorized"),
     TOKEN_INVALIDATION(HttpStatus.UNAUTHORIZED, "Token Invalidation"),
+    METHOD_ARGS_INVALIDATION(HttpStatus.BAD_REQUEST, "Method Arguments Invalidation"),
     ;
 
     private final HttpStatus httpStatus;
