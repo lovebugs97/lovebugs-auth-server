@@ -21,4 +21,13 @@ public class AdminController {
     public List<Member> getAllMembers() {
         return memberRepository.findAll();
     }
+
+    // 블랙리스트 토큰 현황
+
+    // 회원가입된 유저 현황
+
+    // 온라인 유저 현황
+
+    // 회원 등급 조절 기능
+
 }

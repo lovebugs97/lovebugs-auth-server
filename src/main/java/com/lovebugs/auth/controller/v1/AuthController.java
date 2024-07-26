@@ -1,13 +1,14 @@
 package com.lovebugs.auth.controller.v1;
 
 import com.lovebugs.auth.config.JwtProperties;
+import com.lovebugs.auth.dto.auth.EmailDto;
 import com.lovebugs.auth.dto.auth.LoginDto;
 import com.lovebugs.auth.dto.auth.LogoutDto;
 import com.lovebugs.auth.dto.auth.SignupDto;
 import com.lovebugs.auth.service.AuthService;
+import com.lovebugs.auth.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -24,9 +25,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @RequestMapping("/auth/v1")
 @Validated
-@Slf4j
 public class AuthController {
     private final AuthService authService;
+    private final MemberService memberService;
     private final JwtProperties jwtProperties;
 
     @PostMapping("/signup")
@@ -46,6 +47,27 @@ public class AuthController {
         String accessToken = logoutRequest.getAccessToken().replace(jwtProperties.getPrefix(), "").trim();
         logoutRequest.setAccessToken(accessToken);
         authService.logout(logoutRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    /* 이메일 중복 체크 */
+    @GetMapping("/email/verification/check/{email}")
+    public ResponseEntity<Void> checkEmail(@PathVariable("email") String email) {
+        memberService.findMemberByEmail(email);
+        return ResponseEntity.ok().build();
+    }
+
+    /* 이메일 검증을 위한 인증코드 이메일 발송 */
+    @PostMapping("/email/verification/send/code")
+    public ResponseEntity<Void> sendVerifyEmail(@RequestBody @Valid EmailDto.SendVerificationCodeRequest sendVerificationCodeRequest) {
+        authService.sendVerificationCode(sendVerificationCodeRequest);
+        return ResponseEntity.ok().build();
+    }
+
+    /* 발송 코드 검증 */
+    @PostMapping("/email/verification/verify/code")
+    public ResponseEntity<Void> verifyCode(@RequestBody @Valid EmailDto.VerifyCodeRequest verifyCodeRequest) {
+        authService.verifyVerificationCode(verifyCodeRequest);
         return ResponseEntity.ok().build();
     }
 }

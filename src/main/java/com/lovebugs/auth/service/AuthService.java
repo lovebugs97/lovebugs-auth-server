@@ -2,10 +2,7 @@ package com.lovebugs.auth.service;
 
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.RoleType;
-import com.lovebugs.auth.dto.auth.LoginDto;
-import com.lovebugs.auth.dto.auth.LogoutDto;
-import com.lovebugs.auth.dto.auth.SignupDto;
-import com.lovebugs.auth.dto.auth.TokenDto;
+import com.lovebugs.auth.dto.auth.*;
 import com.lovebugs.auth.exception.EmailDuplicationException;
 import com.lovebugs.auth.exception.ErrorCode;
 import com.lovebugs.auth.exception.MemberNotFoundException;
@@ -34,14 +31,22 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
 
+    // TODO: 이메일 발송하고 제한 시간(5분)동안 Redis에 저장
+    public void sendVerificationCode(EmailDto.SendVerificationCodeRequest request) {
+        log.info("Send Verification Code to {}, {}", request.getEmail(), request.getName());
+    }
+
+    // TODO: Redis에 해당 코드가 있는지 검증 -> 있으면 삭제후 정상 응답, 없거나 제한시간 초과시 에러
+    public void verifyVerificationCode(EmailDto.VerifyCodeRequest verifyCodeRequest) {
+        log.info("Verifying code {}", verifyCodeRequest.getVerificationCode());
+    }
+
     @Transactional
     public void signup(SignupDto.Request signupRequest) {
-        // Email 중복 체크
+        // Email 중복 체크 (사전 검증이 되지만 방어 코드로 남겨둠)
         if (memberRepository.existsByEmail(signupRequest.getEmail())) {
             throw new EmailDuplicationException(ErrorCode.EMAIL_DUPLICATION);
         }
-
-        // Todo: Email 인증 로직 추가 (별도의 메서드로 이메일 인증 로직 구현)
 
         // 엔티티 생성 (비밀번호 암호화, 권한 부여) & 영속화
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
@@ -85,4 +90,5 @@ public class AuthService {
 
         member.updateRefreshToken(null);
     }
+
 }
