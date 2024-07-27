@@ -50,7 +50,7 @@ public class AuthService {
 
         // 엔티티 생성 (비밀번호 암호화, 권한 부여) & 영속화
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
-        List<String> roles = List.of(RoleType.ROLE_USER.getRole());
+        List<String> roles = List.of(RoleType.ROLE_ADMIN.getRole());
         Member member = signupRequest.toEntity(encodedPassword, roles);
         memberRepository.save(member);
     }

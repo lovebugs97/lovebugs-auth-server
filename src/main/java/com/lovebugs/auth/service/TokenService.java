@@ -24,6 +24,7 @@ public class TokenService {
     private final TokenBlackListUtils tokenBlackListUtils;
 
     public void validateToken(String token) {
+        log.info("Validating token: {}", token);
         if (token == null || tokenBlackListUtils.isTokenBlackListed(token) || !jwtUtils.validateToken(token)) {
             throw new TokenInvalidationException(ErrorCode.TOKEN_INVALIDATION);
         }

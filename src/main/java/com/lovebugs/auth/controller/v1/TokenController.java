@@ -13,7 +13,7 @@ public class TokenController {
     private static final String BEARER = "Bearer";
     private final TokenService tokenService;
 
-    @PostMapping("/validation")
+    @GetMapping("/validation")
     public ResponseEntity<Void> validateToken(@RequestHeader("Authorization") String token) {
         String parsedToken = token.replace(BEARER, "").trim();
         tokenService.validateToken(parsedToken);
