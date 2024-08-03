@@ -3,17 +3,13 @@ package com.lovebugs.auth.service;
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.RoleType;
 import com.lovebugs.auth.dto.auth.*;
-import com.lovebugs.auth.exception.EmailDuplicationException;
-import com.lovebugs.auth.exception.ErrorCode;
-import com.lovebugs.auth.exception.MemberNotFoundException;
+import com.lovebugs.auth.dto.token.TokenReIssueDto;
+import com.lovebugs.auth.exception.*;
 import com.lovebugs.auth.repository.MemberRepository;
 import com.lovebugs.auth.utils.JwtUtils;
 import com.lovebugs.auth.utils.TokenBlackListUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +24,6 @@ public class AuthService {
     private final MemberRepository memberRepository;
     private final TokenBlackListUtils tokenBlackListUtils;
     private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
     private final JwtUtils jwtUtils;
 
     // TODO: 이메일 발송하고 제한 시간(5분)동안 Redis에 저장
@@ -50,20 +45,21 @@ public class AuthService {
 
         // 엔티티 생성 (비밀번호 암호화, 권한 부여) & 영속화
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
-        List<String> roles = List.of(RoleType.ROLE_ADMIN.getRole());
+        List<String> roles = List.of(RoleType.ROLE_USER.getRole());
         Member member = signupRequest.toEntity(encodedPassword, roles);
         memberRepository.save(member);
     }
 
     @Transactional
     public LoginDto.Response login(LoginDto.Request loginRequest) {
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword());
+        Member member = memberRepository.findByEmail(loginRequest.getEmail())
+                .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
-        Authentication authentication = authenticationManager.authenticate(authenticationToken);
-        TokenDto tokenDto = jwtUtils.generateToken(authentication);
+        if (!passwordEncoder.matches(loginRequest.getPassword(), member.getPassword())) {
+            throw new AuthenticationFailureException(ErrorCode.AUTHENTICATION_FAIL);
+        }
 
-        Member member = (Member) authentication.getPrincipal();
+        TokenDto tokenDto = jwtUtils.generateToken(member);
 
         LoginDto.Response loginResponse =
                 new LoginDto.Response(member, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
@@ -82,7 +78,7 @@ public class AuthService {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
 
-        // AccessToken 블랙리스트 처리 (redis 연동), RefreshToken은 단순히 DB에 null 처리만 반영
+        // AccessToken 블랙리스트 처리, RefreshToken 단순 null 처리
         Date accessTokenExpiration = jwtUtils.extractExpiration(accessToken);
         if (accessTokenExpiration != null) {
             tokenBlackListUtils.addToBlackList(accessToken, accessTokenExpiration);
@@ -91,4 +87,28 @@ public class AuthService {
         member.updateRefreshToken(null);
     }
 
+    @Transactional
+    public TokenReIssueDto.Response reissueToken(TokenReIssueDto.Request tokenReIssueDto) {
+        Member member = memberRepository.findById(tokenReIssueDto.getId())
+                .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
+
+        // 이미 RefreshToken도 만료된 경우
+        if (!jwtUtils.validateToken(tokenReIssueDto.getRefreshToken())) {
+            log.info("Token Expiration: {}", jwtUtils.extractExpiration(tokenReIssueDto.getRefreshToken()));
+            throw new TokenInvalidationException(ErrorCode.TOKEN_INVALIDATION);
+        }
+
+        // 저장된 RefreshToken과 일치하지 않는 경우
+        if (!member.getRefreshToken().equals(tokenReIssueDto.getRefreshToken())) {
+            log.info("Token No Matched");
+            log.info("DB RefreshToken: {}", member.getRefreshToken());
+            log.info("Request RefreshToken: {}", tokenReIssueDto.getRefreshToken());
+            throw new TokenInvalidationException(ErrorCode.TOKEN_INVALIDATION);
+        }
+
+        TokenDto tokenDto = jwtUtils.generateToken(member);
+        member.updateRefreshToken(tokenDto.getRefreshToken());
+
+        return TokenReIssueDto.Response.of(tokenDto);
+    }
 }

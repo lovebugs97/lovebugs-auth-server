@@ -1,13 +1,10 @@
 package com.lovebugs.auth.config;
 
-import com.lovebugs.auth.domain.enums.RoleType;
-import com.lovebugs.auth.service.CustomUserDetailsService;
+import com.lovebugs.auth.filter.AccessTokenBlackListCheckFilter;
+import com.lovebugs.auth.filter.AuthorityCheckFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.ProviderManager;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -16,13 +13,15 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final CustomUserDetailsService userDetailsService;
+    private final AuthorityCheckFilter authorityCheckFilter;
+    private final AccessTokenBlackListCheckFilter accessTokenBlackListCheckFilter;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -34,28 +33,11 @@ public class SecurityConfig {
                 .sessionManagement(ses -> ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http
-                .authorizeHttpRequests(authorizeRequest -> {
-                    authorizeRequest
-                            .anyRequest().permitAll();
-                            /*
-                            .requestMatchers("/auth/v1/**").permitAll()
-                            .requestMatchers("/token/v1/**").permitAll()
-                            .requestMatchers("/member/v1/**").permitAll()
-                            .requestMatchers("/actuator/**").hasRole(RoleType.ROLE_ADMIN.getRole())
-                            .requestMatchers("/admin/v1/**").hasRole(RoleType.ROLE_ADMIN.getRole())
-                            .anyRequest().authenticated();
-                             */
-                });
+                .addFilterBefore(authorityCheckFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(accessTokenBlackListCheckFilter, AuthorityCheckFilter.class)
+                .authorizeHttpRequests(authorizeRequest -> authorizeRequest.anyRequest().permitAll());
 
         return http.build();
-    }
-
-    @Bean
-    public AuthenticationManager authenticationManager() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return new ProviderManager(provider);
     }
 
     @Bean

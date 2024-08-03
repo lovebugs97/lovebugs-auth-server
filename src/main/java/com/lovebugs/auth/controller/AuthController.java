@@ -1,10 +1,11 @@
-package com.lovebugs.auth.controller.v1;
+package com.lovebugs.auth.controller;
 
 import com.lovebugs.auth.config.JwtProperties;
 import com.lovebugs.auth.dto.auth.EmailDto;
 import com.lovebugs.auth.dto.auth.LoginDto;
 import com.lovebugs.auth.dto.auth.LogoutDto;
 import com.lovebugs.auth.dto.auth.SignupDto;
+import com.lovebugs.auth.dto.token.TokenReIssueDto;
 import com.lovebugs.auth.service.AuthService;
 import com.lovebugs.auth.service.MemberService;
 import jakarta.validation.Valid;
@@ -23,7 +24,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/auth/v1")
+@RequestMapping("/auth")
 @Validated
 public class AuthController {
     private final AuthService authService;
@@ -43,17 +44,23 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestBody LogoutDto.Request logoutRequest) {
+    public ResponseEntity<Void> logout(@RequestBody @Valid LogoutDto.Request logoutRequest) {
         String accessToken = logoutRequest.getAccessToken().replace(jwtProperties.getPrefix(), "").trim();
         logoutRequest.setAccessToken(accessToken);
         authService.logout(logoutRequest);
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/reissue")
+    public ResponseEntity<TokenReIssueDto.Response> reissueToken(@RequestBody TokenReIssueDto.Request tokenReIssueDto) {
+        TokenReIssueDto.Response res = authService.reissueToken(tokenReIssueDto);
+        return ResponseEntity.ok(res);
+    }
+
     /* 이메일 중복 체크 */
     @GetMapping("/email/verification/check/{email}")
     public ResponseEntity<Void> checkEmail(@PathVariable("email") String email) {
-        memberService.findMemberByEmail(email);
+        memberService.emailDuplicationCheck(email);
         return ResponseEntity.ok().build();
     }
 

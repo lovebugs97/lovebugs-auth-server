@@ -11,7 +11,7 @@ public enum ErrorCode {
     MEMBER_NOT_FOUND(HttpStatus.BAD_REQUEST, "Member not found"),
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "Email duplication"),
     AUTHENTICATION_FAIL(HttpStatus.BAD_REQUEST, "Unauthorized"),
-    TOKEN_INVALIDATION(HttpStatus.UNAUTHORIZED, "Token Invalidation"),
+    TOKEN_INVALIDATION(HttpStatus.FORBIDDEN, "Token Invalidation"),
     ;
 
     private final HttpStatus httpStatus;

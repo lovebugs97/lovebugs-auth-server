@@ -10,13 +10,10 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Component
@@ -28,26 +25,14 @@ public class JwtUtils {
         byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecretKey());
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.jwtProperties = jwtProperties;
-    }
 
-    public TokenDto generateToken(Authentication authentication) {
-        // 인증 객체로부터 권한 가져오기
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
-        // 토큰 생성
-        String accessToken = createToken(authorities, authentication.getName(), jwtProperties.getAccessTokenExpiration());
-        String refreshToken = createToken(authorities, authentication.getName(), jwtProperties.getRefreshTokenExpiration());
-
-        return new TokenDto(jwtProperties.getPrefix(), accessToken, refreshToken);
+        log.info("SecretKey: {}", jwtProperties.getSecretKey());
     }
 
     public TokenDto generateToken(Member member) {
         String authorities = String.join(",", member.getRoles());
-
-        String accessToken = createToken(authorities, member.getUsername(), jwtProperties.getAccessTokenExpiration());
-        String refreshToken = createToken(authorities, member.getUsername(), jwtProperties.getRefreshTokenExpiration());
+        String accessToken = createToken(authorities, member.getEmail(), jwtProperties.getAccessTokenExpiration());
+        String refreshToken = createToken(authorities, member.getEmail(), jwtProperties.getRefreshTokenExpiration());
 
         return new TokenDto(jwtProperties.getPrefix(), accessToken, refreshToken);
     }
@@ -79,12 +64,15 @@ public class JwtUtils {
         Claims claims = Jwts.claims();
         claims.put("email", email);
         claims.put("authorities", authorities);
+
         Date now = new Date();
+        Date expirationDate = new Date(now.getTime() + (tokenExpTime * 1000));
+        log.info("now: {}, expirationDate: {}", now, expirationDate);
 
         return Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + (tokenExpTime * 1000)))   // seconds -> milliseconds
+                .setExpiration(expirationDate)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
