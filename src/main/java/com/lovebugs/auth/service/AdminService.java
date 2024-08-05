@@ -10,6 +10,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -23,7 +25,8 @@ public class AdminService {
         return memberRepository.findAll(pageRequest).map(AdminDto.MemberListResponse::new);
     }
 
-    public void findBlackList() {
-        tokenBlackListUtils.getBlackListedTokens();
+    public AdminDto.BlackListResponse getBlackListedTokens() {
+        List<AdminDto.BlackListTokenInfo> tokenInfos = tokenBlackListUtils.getBlackListedTokens();
+        return new AdminDto.BlackListResponse(tokenInfos.size(), tokenInfos);
     }
 }

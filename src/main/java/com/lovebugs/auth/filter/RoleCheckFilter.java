@@ -13,17 +13,17 @@ import java.io.IOException;
 
 @Slf4j
 @Component
-public class AuthorityCheckFilter extends OncePerRequestFilter {
+public class RoleCheckFilter extends OncePerRequestFilter {
     private final String ADMIN_ENDPOINT = "/admin";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        String authorityHeader = request.getHeader("authorities");
+        String roleHeader = request.getHeader("role");
 
         if (path.startsWith(ADMIN_ENDPOINT)) {
-            if (authorityHeader == null || !authorityHeader.equals(RoleType.ROLE_ADMIN.getRole())) {
-                log.warn("No Access Authority: {}", authorityHeader);
+            if (roleHeader == null || !roleHeader.equals(RoleType.ROLE_ADMIN.getRole())) {
+                log.warn("CAN NOT Access to {}, Current Role is {}", path, roleHeader);
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                 return;
             }

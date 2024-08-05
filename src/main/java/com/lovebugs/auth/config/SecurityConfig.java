@@ -1,7 +1,7 @@
 package com.lovebugs.auth.config;
 
 import com.lovebugs.auth.filter.AccessTokenBlackListCheckFilter;
-import com.lovebugs.auth.filter.AuthorityCheckFilter;
+import com.lovebugs.auth.filter.RoleCheckFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,7 +20,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
-    private final AuthorityCheckFilter authorityCheckFilter;
+    private final RoleCheckFilter roleCheckFilter;
     private final AccessTokenBlackListCheckFilter accessTokenBlackListCheckFilter;
 
     @Bean
@@ -33,8 +33,8 @@ public class SecurityConfig {
                 .sessionManagement(ses -> ses.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         http
-                .addFilterBefore(authorityCheckFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(accessTokenBlackListCheckFilter, AuthorityCheckFilter.class)
+                .addFilterBefore(roleCheckFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(accessTokenBlackListCheckFilter, RoleCheckFilter.class)
                 .authorizeHttpRequests(authorizeRequest -> authorizeRequest.anyRequest().permitAll());
 
         return http.build();

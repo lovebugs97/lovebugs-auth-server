@@ -8,9 +8,6 @@ import jakarta.validation.constraints.Pattern;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import java.time.LocalDateTime;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
 
 public class LoginDto {
     @Getter
@@ -46,16 +43,7 @@ public class LoginDto {
             this.gender = member.getGender();
             this.accessToken = accessToken;
             this.refreshToken = refreshToken;
-            this.roleType = findRoleType(member.getRoles());
-        }
-
-        // 가장 높은 등급 1개 반환
-        private RoleType findRoleType(List<String> roles) {
-            return roles.stream()
-                    .map(RoleType::fromRoleString)
-                    .filter(Objects::nonNull)
-                    .max(Comparator.comparingInt((RoleType::ordinal)))
-                    .orElse(null);
+            this.roleType = member.getRoleType();
         }
     }
 }

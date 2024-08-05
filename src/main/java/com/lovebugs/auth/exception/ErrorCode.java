@@ -12,6 +12,8 @@ public enum ErrorCode {
     EMAIL_DUPLICATION(HttpStatus.BAD_REQUEST, "Email duplication"),
     AUTHENTICATION_FAIL(HttpStatus.BAD_REQUEST, "Unauthorized"),
     TOKEN_INVALIDATION(HttpStatus.FORBIDDEN, "Token Invalidation"),
+    INVALID_FILENAME(HttpStatus.BAD_REQUEST, "Invalid Filename"),
+    UNKNOWN_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "Unknown Error"),
     ;
 
     private final HttpStatus httpStatus;

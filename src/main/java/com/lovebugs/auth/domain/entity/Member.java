@@ -1,6 +1,7 @@
 package com.lovebugs.auth.domain.entity;
 
 import com.lovebugs.auth.domain.enums.Gender;
+import com.lovebugs.auth.domain.enums.RoleType;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -8,8 +9,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 @Entity
 @Table(indexes = @Index(name = "idx_member_email", columnList = "email"))
@@ -41,18 +40,18 @@ public class Member extends BaseEntity {
     @Enumerated(EnumType.ORDINAL)
     private Gender gender;
 
-    @ElementCollection(fetch = FetchType.EAGER)
-    private List<String> roles = new ArrayList<>();
+    @Enumerated(EnumType.STRING)
+    private RoleType roleType;
 
     @Builder
-    public Member(String name, String email, String profileImage, String password, String refreshToken, Gender gender, List<String> roles) {
+    public Member(String name, String email, String profileImage, String password, String refreshToken, Gender gender, RoleType roleType) {
         this.name = name;
         this.email = email;
         this.profileImage = profileImage;
         this.password = password;
         this.refreshToken = refreshToken;
         this.gender = gender;
-        this.roles = roles;
+        this.roleType = roleType;
     }
 
     public void updateRefreshToken(String refreshToken) {

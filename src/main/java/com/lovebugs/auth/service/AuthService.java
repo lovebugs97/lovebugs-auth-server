@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
-import java.util.List;
 
 @Slf4j
 @Service
@@ -45,8 +44,7 @@ public class AuthService {
 
         // 엔티티 생성 (비밀번호 암호화, 권한 부여) & 영속화
         String encodedPassword = passwordEncoder.encode(signupRequest.getPassword());
-        List<String> roles = List.of(RoleType.ROLE_USER.getRole());
-        Member member = signupRequest.toEntity(encodedPassword, roles);
+        Member member = signupRequest.toEntity(encodedPassword, RoleType.ROLE_ADMIN);
         memberRepository.save(member);
     }
 
@@ -59,15 +57,12 @@ public class AuthService {
             throw new AuthenticationFailureException(ErrorCode.AUTHENTICATION_FAIL);
         }
 
-        TokenDto tokenDto = jwtUtils.generateToken(member);
-
-        LoginDto.Response loginResponse =
-                new LoginDto.Response(member, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
+        TokenDto tokenDto = jwtUtils.generateToken(member.getRoleType(), member.getEmail());
 
         member.updateLastLoginDate();
         member.updateRefreshToken(tokenDto.getRefreshToken());
 
-        return loginResponse;
+        return new LoginDto.Response(member, tokenDto.getAccessToken(), tokenDto.getRefreshToken());
     }
 
     @Transactional
@@ -106,7 +101,7 @@ public class AuthService {
             throw new TokenInvalidationException(ErrorCode.TOKEN_INVALIDATION);
         }
 
-        TokenDto tokenDto = jwtUtils.generateToken(member);
+        TokenDto tokenDto = jwtUtils.generateToken(member.getRoleType(), member.getEmail());
         member.updateRefreshToken(tokenDto.getRefreshToken());
 
         return TokenReIssueDto.Response.of(tokenDto);

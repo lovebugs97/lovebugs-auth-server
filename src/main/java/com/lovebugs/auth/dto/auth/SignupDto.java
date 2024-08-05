@@ -2,6 +2,7 @@ package com.lovebugs.auth.dto.auth;
 
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.Gender;
+import com.lovebugs.auth.domain.enums.RoleType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
@@ -25,13 +26,13 @@ public class SignupDto {
 
         private final Gender gender;
 
-        public Member toEntity(String encodedPassword, List<String> roles) {
+        public Member toEntity(String encodedPassword, RoleType roleType) {
             return Member.builder()
                     .name(this.name)
                     .email(this.email)
                     .gender(this.gender)
                     .password(encodedPassword)
-                    .roles(roles)
+                    .roleType(roleType)
                     .build();
         }
     }

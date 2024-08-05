@@ -3,13 +3,12 @@ package com.lovebugs.auth.dto.admin;
 import com.lovebugs.auth.domain.entity.Member;
 import com.lovebugs.auth.domain.enums.Gender;
 import com.lovebugs.auth.domain.enums.RoleType;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
 public class AdminDto {
     @Getter
@@ -34,16 +33,33 @@ public class AdminDto {
             this.lastLoginDate = member.getLastLoginDate();
             this.gender = member.getGender();
             this.refreshToken = member.getRefreshToken();
-            this.roleType = findRoleType(member.getRoles());
+            this.roleType = member.getRoleType();
         }
+    }
 
-        // 가장 높은 등급 1개 반환
-        private RoleType findRoleType(List<String> roles) {
-            return roles.stream()
-                    .map(RoleType::fromRoleString)
-                    .filter(Objects::nonNull)
-                    .max(Comparator.comparingInt((RoleType::ordinal)))
-                    .orElse(null);
-        }
+    @Getter
+    @RequiredArgsConstructor
+    public static class AddBlackListObject implements Serializable {
+        private final Date addedAt;
+        private final Date expAt;
+        private final String token;
+    }
+
+    @Getter @Setter
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class BlackListTokenInfo {
+        private String token;
+        private String email;
+        private String roleType;
+        private Date addedAt;
+        private Date expAt;
+    }
+
+    @Getter
+    @RequiredArgsConstructor
+    public static class BlackListResponse {
+        private final Integer count;
+        private final List<BlackListTokenInfo> tokenInfos;
     }
 }

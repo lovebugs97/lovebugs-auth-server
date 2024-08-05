@@ -1,12 +1,9 @@
 package com.lovebugs.auth.handler;
 
-
 import com.lovebugs.auth.dto.common.ErrorResponse;
 import com.lovebugs.auth.exception.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
@@ -14,28 +11,21 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Slf4j
 @RestControllerAdvice
 public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
-    @ExceptionHandler(AuthenticationFailureException.class)
-    protected ResponseEntity<ErrorResponse> handleAuthenticationFailedException(AuthenticationFailureException e) {
+    @ExceptionHandler({
+            AuthenticationFailureException.class,
+            EmailDuplicationException.class,
+            MemberNotFoundException.class,
+            TokenInvalidationException.class,
+            InvalidFilenameException.class
+    })
+    protected ResponseEntity<ErrorResponse> handleRuntimeException(RuntimeException e) {
         log.error(e.getMessage());
-        return handleExceptionInternal(e.getErrorCode());
-    }
 
-    @ExceptionHandler(EmailDuplicationException.class)
-    protected ResponseEntity<ErrorResponse> handleEmailDuplicationException(EmailDuplicationException e) {
-        log.error(e.getMessage());
-        return handleExceptionInternal(e.getErrorCode());
-    }
+        if (e instanceof BaseRuntimeException) {
+            return handleExceptionInternal(((BaseRuntimeException) e).getErrorCode());
+        }
 
-    @ExceptionHandler(MemberNotFoundException.class)
-    protected ResponseEntity<ErrorResponse> handleMemberNotFoundException(MemberNotFoundException e) {
-        log.error(e.getMessage());
-        return handleExceptionInternal(e.getErrorCode());
-    }
-
-    @ExceptionHandler(TokenInvalidationException.class)
-    protected ResponseEntity<ErrorResponse> handleTokenInvalidationException(TokenInvalidationException e) {
-        log.error(e.getMessage());
-        return handleExceptionInternal(e.getErrorCode());
+        return handleExceptionInternal(ErrorCode.UNKNOWN_ERROR);
     }
 
     private ResponseEntity<ErrorResponse> handleExceptionInternal(ErrorCode errorCode) {
